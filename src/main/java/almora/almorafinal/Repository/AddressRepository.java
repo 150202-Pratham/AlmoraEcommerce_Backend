@@ -1,12 +1,13 @@
 package almora.almorafinal.Repository;
 
-import almora.almorafinal.Entities.Order;
+import almora.almorafinal.Entities.Address;
 import almora.almorafinal.Entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface AddressRepository extends JpaRepository<Address, Long> {
 
-    List<Order>  findByUser(User user) ;
+    List<Address> findByUser(User user) ;
+
 }

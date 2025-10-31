@@ -1,4 +1,13 @@
 package almora.almorafinal.Repository;
 
-public class CartRepository {
+import almora.almorafinal.Entities.Cart;
+import almora.almorafinal.Entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface CartRepository extends JpaRepository<Cart,Long> {
+    Optional<Cart>findByUser(User user) ;
+
+
 }
