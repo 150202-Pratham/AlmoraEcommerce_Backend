@@ -1,8 +1,10 @@
 package almora.almorafinal.Controller;
 
+import almora.almorafinal.DTO.ProductDTO;
 import almora.almorafinal.Entities.Product;
 import almora.almorafinal.Services.ProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,43 +13,42 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
+
 public class ProductController {
     private final ProductService service;
 
-    public ProductController(ProductService service) {
-        this.service = service;
-    }
+
 
     // ---------- Add New Product ----------
     @PostMapping
     public ResponseEntity<?> addProduct(@Valid @RequestBody Product product) {
-        Product saved = service.save(product);
-        return ResponseEntity.ok(Map.of("message", "Product added successfully", "product", saved));
+
+        return ResponseEntity.ok(service.addProduct(product));
     }
 
     // ---------- Get All Products ----------
     @GetMapping
-    public ResponseEntity<List<Product>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<List<ProductDTO>> getAll() {
+        return ResponseEntity.ok(service.getAllProducts());
     }
 
     // ---------- Get Product by ID ----------
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        return service.getById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(404).body(Map.of("error", "Product not found")));
+    public ResponseEntity<ProductDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getProductById(id)) ;
+
     }
 
     // ---------- Filter by Category ----------
-    @GetMapping("/category/{category}")
-    public ResponseEntity<List<Product>> getByCategory(@PathVariable Product.Category category) {
+    @GetMapping(params = "category")
+    public ResponseEntity<List<ProductDTO>> getByCategory(@RequestParam Product.Category category) {
         return ResponseEntity.ok(service.getByCategory(category));
     }
 
     // ---------- Filter by Category + SubCategory ----------
     @GetMapping("/category/{category}/subcategory/{subCategory}")
-    public ResponseEntity<List<Product>> getByCategoryAndSubCategory(
+    public ResponseEntity<List<ProductDTO>> getByCategoryAndSubCategory(
             @PathVariable Product.Category category,
             @PathVariable String subCategory
     ) {
@@ -56,8 +57,13 @@ public class ProductController {
 
     // ---------- Search by Name ----------
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> search(@RequestParam String keyword) {
+    public ResponseEntity<List<ProductDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(service.search(keyword));
+    }
+    //-----------Update Product -------------
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+        return ResponseEntity.ok(service.upDateProduct(id, updatedProduct));
     }
 
     // ---------- Delete Product ----------

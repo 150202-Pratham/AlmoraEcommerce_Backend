@@ -26,19 +26,25 @@ public class Order {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
-    private double total;
+    private double totalAmount;
 
     private String shippingAddress;
 
-    @Enumerated(EnumType.STRING)
-    private Status status = Status.PLACED;
+    private String paymentIntentId;
 
-    private LocalDateTime orderDate = LocalDateTime.now();
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private Status status;
+
+    private LocalDateTime createdAt;
     private double totalPrice;
+
+
     public enum Status {
-        PLACED,
+        PENDING,
+        PAID,
+        CANCELLED,
         SHIPPED,
-        DELIVERED,
-        CANCELLED
+        DELIVERED
     }
 }

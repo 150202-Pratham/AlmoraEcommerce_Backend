@@ -1,5 +1,6 @@
 package almora.almorafinal.Controller;
 
+import almora.almorafinal.DTO.CartDTO;
 import almora.almorafinal.Entities.Cart;
 import almora.almorafinal.Entities.User;
 import almora.almorafinal.Services.CartService;
@@ -28,36 +29,39 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<Cart> viewCart(@RequestParam String email) {
-        return ResponseEntity.ok(cartService.getCart(findUser(email)));
+    public ResponseEntity<CartDTO> viewCart(@RequestParam String email) {
+
+        return ResponseEntity.ok(cartService.getCart(findUser(email).getId()));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addItem(@RequestParam String email,
+    public ResponseEntity<CartDTO> addItem(@RequestParam String email,
                                      @RequestParam Long productId,
                                      @RequestParam int quantity) {
-        Cart updated = cartService.addItem(findUser(email), productId, quantity);
-        return ResponseEntity.ok(Map.of("message", "Item added", "cart", updated));
+        CartDTO updated = cartService.addItem(findUser(email).getId(), productId, quantity);
+        return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateItem(@RequestParam String email,
+    public ResponseEntity<CartDTO> updateItem(@RequestParam String email,
                                         @RequestParam Long productId,
                                         @RequestParam int quantity) {
-        Cart updated = cartService.updateItem(findUser(email), productId, quantity);
-        return ResponseEntity.ok(Map.of("message", "Item updated", "cart", updated));
+        CartDTO updated = cartService.updateItem(findUser(email).getId(), productId, quantity);
+        return ResponseEntity.ok(updated);
+
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<?> removeItem(@RequestParam String email,
+    public ResponseEntity<CartDTO> removeItem(@RequestParam String email,
                                         @RequestParam Long productId) {
-        Cart updated = cartService.removeItem(findUser(email), productId);
-        return ResponseEntity.ok(Map.of("message", "Item removed", "cart", updated));
+        CartDTO updated = cartService.removeItem(findUser(email).getId(), productId);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/clear")
-    public ResponseEntity<?> clearCart(@RequestParam String email) {
-        cartService.clearCart(findUser(email));
-        return ResponseEntity.ok(Map.of("message", "Cart cleared"));
+    public ResponseEntity<Void> clearCart(@RequestParam String email) {
+        cartService.clearCart(findUser(email).getId());
+        return ResponseEntity.noContent().build();
+
     }
 }

@@ -7,6 +7,8 @@ import almora.almorafinal.Services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +28,43 @@ public class OrderController {
         return userService.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    // 🧾 Place Order
+
+
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(@RequestParam String email,
-                                        @RequestParam String address) {
-        Order order = orderService.placeOrder(findUser(email), address);
-        return ResponseEntity.ok(Map.of("message", "Order placed successfully", "orderId", order.getId()));
+    public ResponseEntity<?> placeOrder(@RequestBody Map<String, Object> request) {
+        try {
+            // extract data
+            String email = request.get("email").toString();
+            String paymentIntentId = request.containsKey("paymentIntentId")
+                    ? request.get("paymentIntentId").toString()
+                    : null;
+            Double totalAmount = request.containsKey("totalAmount")
+                    ? Double.parseDouble(request.get("totalAmount").toString())
+                    : 0.0;
+
+            User user = findUser(email);
+
+            // build order
+            Order order = Order.builder()
+                    .user(user)
+                    .totalAmount(totalAmount)
+                    .status(paymentIntentId != null ? Order.Status.PAID : Order.Status.PENDING)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            Order savedOrder = orderService.saveOrder(order);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Order placed successfully");
+            response.put("orderId", savedOrder != null ? savedOrder.getId() : null);
+            response.put("paymentIntentId", paymentIntentId);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 📜 Get Order History
@@ -41,7 +74,7 @@ public class OrderController {
     }
 
     // 🔍 Get Single Order by ID
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }

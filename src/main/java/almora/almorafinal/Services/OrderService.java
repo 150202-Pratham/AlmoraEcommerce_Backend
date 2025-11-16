@@ -9,6 +9,7 @@ import almora.almorafinal.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,12 +28,12 @@ public class OrderService {
         this.emailService = emailService;
     }
 
-    public Order placeOrder(User user, String shippingAddress) {
+    public Order placeOrder(User user, String paymentIntentId, String shippingAddress) {
         Cart cart = cartRepo.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Cart not found for user"));
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new RuntimeException("Cart is empty, cannot place order");
         }
 
         // Convert CartItems to OrderItems
@@ -45,36 +46,48 @@ public class OrderService {
                         .build())
                 .collect(Collectors.toList());
 
-        // Create Order
+        // Calculate total
+        double total = orderItems.stream()
+                .mapToDouble(OrderItem::getSubtotal)
+                .sum();
+
+        // Create new Order
         Order order = Order.builder()
                 .user(user)
                 .items(orderItems)
-                .total(cart.getTotal())
-                .shippingAddress(shippingAddress)
-                .status(Order.Status.PLACED)
+                .totalAmount(total)
+                .status(paymentIntentId != null ? Order.Status.PAID : Order.Status.PENDING)
+                .shippingAddress(shippingAddress != null ? shippingAddress : "N/A")
+                .paymentIntentId(paymentIntentId)
+                .createdAt(LocalDateTime.now())
                 .build();
 
 
-        double total = order.getItems()
-                .stream()
-                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
-                .sum();
-
-        order.setTotalPrice(total);
-
+        double total1 = order.getItems() != null
+                ? order.getItems().stream()
+                .mapToDouble(OrderItem::getSubtotal)
+                .sum()
+                : 0.0;
 
 
-        // Save Order and clear Cart
+        order.setTotalPrice(total1);  // optional, if you use both
+        order.setTotalAmount(total1); // optional, for payment intent total
+        // Save Order
+
         Order savedOrder = orderRepo.save(order);
-        if (order.getUser() != null && order.getUser().getEmail() != null) {
+
+        // Send confirmation email if user email exists
+        if (user.getEmail() != null) {
             emailService.sendOrderConfirmation(
-                    order.getUser().getEmail(),
+                    user.getEmail(),
                     String.valueOf(savedOrder.getId()),
-                    savedOrder.getTotalPrice()
+                    savedOrder.getTotalAmount()
             );
         }
+
+        // Clear the user's cart
         cart.getItems().clear();
-        cart.setTotal(0);
+        cart.setTotal(0.0);
         cartRepo.save(cart);
 
         return savedOrder;
@@ -92,6 +105,10 @@ public class OrderService {
     public Order updateStatus(Long orderId, Order.Status status) {
         Order order = getOrderById(orderId);
         order.setStatus(status);
+        return orderRepo.save(order);
+    }
+
+    public Order saveOrder(Order order) {
         return orderRepo.save(order);
     }
 }

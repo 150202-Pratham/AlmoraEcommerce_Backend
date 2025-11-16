@@ -1,6 +1,8 @@
 package almora.almorafinal.Entities;
 
+import almora.almorafinal.DTO.ReviewDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +48,7 @@ public class Product {
     @Column(length = 2000)
     private String description;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> imageUrls; // ["url1", "url2", ...]
 
     private Boolean active = true;
@@ -55,4 +57,9 @@ public class Product {
         MEN,
         WOMEN
     }
+
+    private Double averageRating;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Review> reviews;
 }
