@@ -41,6 +41,7 @@ public class Order {
 
 
     public enum Status {
+        PLACED,
         PENDING,
         PAID,
         CANCELLED,

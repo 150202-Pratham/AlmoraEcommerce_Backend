@@ -54,6 +54,12 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUserProfile(@PathVariable Long id, @RequestBody User updatedUser) {
+        User user = userService.updateUserDetails(id, updatedUser);
+        return ResponseEntity.ok(user);
+    }
+
 
 
 

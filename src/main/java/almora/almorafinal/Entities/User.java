@@ -1,5 +1,6 @@
 package almora.almorafinal.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -40,4 +41,9 @@ public class User {
         this.email = email;
         this.password = password;
     }
+    @JsonProperty("phone")
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private boolean verified = false;
 }

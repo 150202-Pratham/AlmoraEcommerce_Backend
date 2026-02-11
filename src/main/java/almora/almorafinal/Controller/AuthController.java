@@ -6,10 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -73,6 +70,15 @@ public class AuthController {
                 "message", "Password reset link will be sent to your email (stubbed)",
                 "email", req.email()
         ));
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        boolean success = userService.verifyUser(token);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired token"));
     }
 
 
