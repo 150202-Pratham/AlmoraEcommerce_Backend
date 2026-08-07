@@ -1,9 +1,14 @@
 package almora.almorafinal.Services;
 
 import almora.almorafinal.DTO.ProductDTO;
+import almora.almorafinal.DTO.ProductFilterRequest;
 import almora.almorafinal.Entities.Product;
 import almora.almorafinal.Repository.ProductRepository;
+import almora.almorafinal.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,10 +53,10 @@ public class ProductService {
 
     }
 
-    public List<ProductDTO> getAllProducts() {
-        return repo.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList()) ;
+    public Page<ProductDTO> getAllProducts(ProductFilterRequest request , Pageable pageable) {
+        Specification<Product> spec = ProductSpecification.filterProducts(request) ;
+        return repo.findAll(spec ,pageable)
+                .map(this::toDTO);
 
     }
 

@@ -1,10 +1,14 @@
 package almora.almorafinal.Controller;
 
 import almora.almorafinal.DTO.ProductDTO;
+import almora.almorafinal.DTO.ProductFilterRequest;
 import almora.almorafinal.Entities.Product;
 import almora.almorafinal.Services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +33,30 @@ public class ProductController {
 
     // ---------- Get All Products ----------
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAll() {
-        return ResponseEntity.ok(service.getAllProducts());
+    public ResponseEntity<Page<ProductDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page ,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Product.Category category ,
+            @RequestParam(required = false ) String subCategory ,
+            @RequestParam(required = false) String brand ,
+            @RequestParam(required = false) String color ,
+            @RequestParam(required = false)  Double minPrice,
+            @RequestParam(required = false) Double maxPrice ,
+            @RequestParam(required = false) String keyword
+    ) {
+        ProductFilterRequest request = ProductFilterRequest.builder()
+                .category(category)
+                .subCategory(subCategory)
+                .brand(brand)
+                .color(color)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .keyword(keyword)
+                .build();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return ResponseEntity.ok(service.getAllProducts(request ,pageable));
     }
 
     // ---------- Get Product by ID ----------
