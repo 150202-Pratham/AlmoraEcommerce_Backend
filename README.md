@@ -1,4 +1,4 @@
-# 🚀 Almora v2.0 – Production-Grade Scalable E-Commerce Platform
+#  Almora 2.0 – Production-Grade Scalable E-Commerce Platform
 
 <div align="center">
 
